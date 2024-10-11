@@ -1,0 +1,223 @@
+### *Problem Requirements*
+
+Design and implement two microservices with the following specifications:
+
+---
+
+#### *Microservice 1: Order Processing Service*
+
+*Technologies and Frameworks:*
+
+- *Spring Boot*: For building the microservice.
+- *JPA (Java Persistence API)*: For database interactions.
+- *Asynchronous HTTP Client*: To make non-blocking calls to external services (e.g., Spring WebClient).
+
+*Functional Requirements:*
+
+1. *Authentication with 3rd Party Service:*
+
+   - *Endpoint*: POST /auth
+   - *Parameters*: username, password
+   - *Response*: JWT token
+   - *Requirements*:
+     - Authenticate with the 3rd party service to obtain a JWT token.
+     - Manage the JWT token efficiently across multiple instances.
+     - Handle token expiration and refresh as needed.
+
+2. *Retrieving Unprocessed Orders:*
+
+   - *Endpoint*: GET /orders/unprocessed
+   - *Response*: startIndex and endIndex representing the auto-increment IDs of unprocessed orders.
+   - *Requirements*:
+     - Fetch the range of unprocessed orders from the 3rd party service.
+     - Partition the range into smaller chunks for parallel processing.
+
+3. *Fetching Orders Data:*
+
+   - *Endpoint*: GET /orders?startIndex=&endIndex=
+   - *Parameters*: startIndex, endIndex
+   - *Response*: List of orders with fields:
+     - id (unique order ID)
+     - order_date
+     - order_amount
+     - order_label
+   - *Requirements*:
+     - Retrieve orders within specified ranges.
+     - Ensure efficient and parallel fetching of orders.
+
+4. *Saving Orders to Database:*
+
+   - *Database Schema*:
+     - Table: orders
+     - Fields: order_id (unique, primary key), order_date, order_amount, order_label, etc.
+   - *Requirements*:
+     - Save the retrieved orders into a database.
+     - Ensure order_id is unique to prevent duplicate entries.
+     - Implement idempotent operations to handle retries and avoid data duplication.
+
+*Non-Functional Requirements:*
+
+1. *Scalability:*
+
+   - Design the service to scale horizontally, allowing multiple instances to run concurrently.
+   - Enable parallel processing of orders by distributing workloads among instances.
+   - Implement a pattern (e.g., message queue) to partition and assign tasks without overlap.
+
+2. *Resilience and Fault Tolerance:*
+
+   - *Resilient Patterns*:
+     - *Retry Mechanism*: Automatically retry failed operations with exponential backoff.
+     - *Circuit Breaker*: Prevent repeated failures from overwhelming the system.
+     - *Bulkhead Isolation*: Limit resource usage to prevent cascading failures.
+     - *Fallback Strategies*: Provide alternative responses or actions when failures occur.
+   - *Requirements*:
+     - Ensure the system can handle transient failures gracefully.
+     - Maintain high availability and reliability under load or failure conditions.
+
+3. *Concurrency Control and Data Consistency:*
+
+   - Implement mechanisms to prevent race conditions when multiple instances process data.
+   - Use distributed locks or optimistic/pessimistic locking as appropriate.
+   - Ensure transactional integrity when interacting with the database.
+
+4. *Token Management Across Instances:*
+
+   - Store and manage the JWT token in a shared, thread-safe manner accessible by all instances (e.g., using Redis).
+   - Handle token refresh operations efficiently, ensuring only one instance refreshes the token at a time.
+   - Prevent redundant authentication requests to the 3rd party service.
+
+5. *Configuration Management:*
+
+   - Externalize configurations (e.g., API endpoints, credentials) to support different environments.
+   - Use Spring's externalized configuration features or a centralized configuration service.
+
+6. *Security:*
+
+   - Securely store and handle authentication tokens and credentials.
+   - Use HTTPS for all communications with the 3rd party service.
+   - Implement input validation and protect against common security threats (e.g., injection attacks).
+
+7. *Logging and Monitoring:*
+
+   - Implement centralized logging to capture application logs from all instances.
+   - Monitor key metrics (e.g., request rates, error rates, latency) using tools like Prometheus and Grafana.
+   - Set up alerts for critical issues to enable proactive maintenance.
+
+---
+
+#### *Microservice 2: Mock 3rd Party Service*
+
+*Purpose:*
+
+- Simulate the 3rd party API for development and testing purposes.
+- Must be capable of handling concurrent requests from multiple instances (at least 10 in parallel).
+
+*Endpoints:*
+
+1. *Authentication Endpoint:*
+
+   - *Endpoint*: POST /auth
+   - *Parameters*: username, password
+   - *Response*: JWT token (dummy token for testing)
+   - *Requirements*:
+     - Authenticate incoming requests and return a mock JWT token.
+     - Simulate token expiration if necessary for testing refresh logic.
+
+2. *Unprocessed Orders Endpoint:*
+
+   - *Endpoint*: GET /orders/unprocessed
+   - *Response*: startIndex and endIndex (dummy values)
+   - *Requirements*:
+     - Provide a range of unprocessed order IDs for testing.
+     - Ensure consistency in responses for concurrent requests.
+
+3. *Orders Data Endpoint:*
+
+   - *Endpoint*: GET /orders?startIndex=&endIndex=
+   - *Parameters*: startIndex, endIndex
+   - *Response*: List of dummy orders with fields:
+     - id
+     - order_date
+     - order_amount
+     - order_label
+   - *Requirements*:
+     - Generate and return dummy order data based on the requested range.
+     - Handle concurrent requests efficiently without performance degradation.
+
+*Performance Requirements:*
+
+- *Concurrency Handling:*
+  - Must support at least 10 parallel connections.
+  - Optimize resource usage to ensure responsiveness under concurrent load.
+
+- *Data Simulation:*
+  - Generate realistic dummy data for orders.
+  - Ensure data integrity and consistency across requests.
+
+---
+
+### *Overall System Requirements*
+
+1. *Parallel Processing and Work Distribution:*
+
+   - Implement a mechanism (e.g., message queue like RabbitMQ or Kafka) to distribute workload among multiple instances.
+   - Partition the range of unprocessed orders into sub-ranges for parallel processing.
+   - Ensure that each sub-range is processed by only one instance to prevent duplication.
+
+2. *Idempotency and Data Integrity:*
+
+   - Design the system to handle retries gracefully without causing duplicate data entries.
+   - Use unique constraints and idempotent operations in the database layer.
+
+3. *Error Handling and Retries:*
+
+   - Implement robust error handling strategies.
+   - Use retries with exponential backoff for transient failures.
+   - Avoid overwhelming external services with rapid retry attempts.
+
+4. *Testing and Validation:*
+
+   - Write unit and integration tests to verify functionality.
+   - Perform load testing to ensure the system can handle concurrent processing.
+   - Simulate failure scenarios to test resilience patterns.
+
+5. *Deployment and Configuration:*
+
+   - Use containerization (e.g., Docker) for consistent deployment across environments.
+   - Automate deployments using CI/CD pipelines.
+   - Manage configurations securely and efficiently across different stages (development, testing, production).
+
+---
+
+### *Summary of Requirements*
+
+- *Functional:*
+  - Authenticate with a 3rd party service and manage JWT tokens.
+  - Retrieve unprocessed orders and process them in parallel across multiple instances.
+  - Save orders to a database, ensuring uniqueness of order_id.
+  - Mock the 3rd party service to simulate endpoints and handle concurrent requests.
+
+- *Non-Functional:*
+  - Design for horizontal scalability and efficient resource utilization.
+  - Implement resilient patterns to handle failures and maintain system stability.
+  - Ensure data consistency and integrity in a concurrent processing environment.
+  - Secure the system, manage configurations effectively, and maintain observability through logging and monitoring.
+
+---
+
+By adhering to these requirements, you will design a robust, scalable, and resilient system capable of efficiently processing orders in parallel while ensuring data integrity and reliability. 
+The inclusion of resilient patterns and proper token management will enhance the system's ability to handle real-world challenges such as network issues, service downtimes, and high concurrency demands.
+
+Iti dau si cateva hinturi:
+
+1. Folosește un mecanism de coadă de mesaje (ex: *RabbitMQ* sau *Apache Kafka*) pentru a distribui sarcinile între multiple instanțe și a permite procesarea în paralel.
+
+2. Implementează gestionarea token-ului JWT într-un cache partajat (ex: *Redis*) pentru a fi accesibil de toate instanțele și a evita autentificări repetate.
+
+3. Utilizează un client HTTP asincron (ex: *WebClient* din Spring WebFlux) pentru a efectua apeluri non-blocante către serviciul 3rd party.
+
+4. Salvează comenzile în baza de date asigurând unicitatea câmpului order_id și idempotenta operațiunilor pentru a evita duplicatele.
+
+5. Pentru reziliență, implementează pattern-uri precum *Retry, **Circuit Breaker* și *Bulkhead* folosind biblioteci ca *Resilience4j*.
+
+6. Simulează serviciul 3rd party folosind un server mock (ex: *WireMock*) configurat să suporte minim 10 conexiuni paralele cu date fictive.
