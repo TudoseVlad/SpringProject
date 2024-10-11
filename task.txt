@@ -200,7 +200,7 @@ Design and implement two microservices with the following specifications:
 - *Non-Functional:*
   - Design for horizontal scalability and efficient resource utilization.
   - Implement resilient patterns to handle failures and maintain system stability.
-  - Ensure data consistency and integrity in a concurrent processing environment.
+  - Ensure data consistency and integrity in a concurrent processingß environment.
   - Secure the system, manage configurations effectively, and maintain observability through logging and monitoring.
 
 ---
@@ -221,3 +221,22 @@ Iti dau si cateva hinturi:
 5. Pentru reziliență, implementează pattern-uri precum *Retry, **Circuit Breaker* și *Bulkhead* folosind biblioteci ca *Resilience4j*.
 
 6. Simulează serviciul 3rd party folosind un server mock (ex: *WireMock*) configurat să suporte minim 10 conexiuni paralele cu date fictive.
+
+
+
+---- plan de bataie
+0. instalare baza de date mysql
+1. make data base
+2. post on database
+3.interogarte database
+4.retrevie unprocessed order from database
+6. alta baza de date stocata in memory (redis)  pt auth
+5. auth
+7. task 2 mock pe baza de date
+8. unit teste facute cu mock-ul de mai sus?
+
+-----
+
+
+
+
