@@ -34,7 +34,7 @@ public class OrderController {
         return new ResponseEntity<>("Order Products API is up and running!", HttpStatus.OK);
     }
 
-    @GetMapping
+    @GetMapping("/find")
     public ResponseEntity<?> getOrderByIndex(@RequestParam(name = "index") Long index) {
         log.info(LocalDateTime.now() + "Get order by index endpoint called");
         ResponseEntity<?> response = null;
@@ -54,6 +54,7 @@ public class OrderController {
         return response;
     }
 
+    @GetMapping
     public ResponseEntity<?>  getOrdersInRange(@RequestParam(name ="startIndex") Long startIndex, @RequestParam(name = "endIndex") Long endIndex) {
         log.info(LocalDateTime.now() + "Get order in ranges endpoint called");
         ResponseEntity<?> response = null;
