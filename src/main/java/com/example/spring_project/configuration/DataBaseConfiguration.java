@@ -11,15 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
-
+/// usage if we dont use db and create db in memory
 @Configuration
 public class DataBaseConfiguration {
     private static final Logger log = LoggerFactory.getLogger(DataBaseConfiguration.class);
     @Bean
     CommandLineRunner initDatabase(OrderRepository repository){
-        return args -> {
-            log.info("Loading entity into db: " + repository.save(new Order("Dorna",500d,LocalDate.of(2024,10,11))));
-            log.info("Loading entity into db: " + repository.save(new Order("Borsec",600d,LocalDate.of(2024,10,12))));
-        };
+        return args -> {};
     }
 }

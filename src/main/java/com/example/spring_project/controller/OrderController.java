@@ -11,13 +11,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.spring_project.service.OrderService;
 import com.example.spring_project.entity.Order;
+import com.example.spring_project.entity.Range;
 import com.example.spring_project.helpers.CustomErrorResponse;
 
-import org.apache.el.stream.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/orders")
@@ -48,6 +48,48 @@ public class OrderController {
             }
         } catch (Exception e) {
             log.warn(LocalDateTime.now() + " Exception encountered while trying to retrieve order with index: " + index + "; Exception: " + e.getMessage());
+            response = new ResponseEntity<>(new CustomErrorResponse("400", e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+
+        return response;
+    }
+
+    public ResponseEntity<?>  getOrdersInRange(@RequestParam(name ="startIndex") Long startIndex, @RequestParam(name = "endIndex") Long endIndex) {
+        log.info(LocalDateTime.now() + "Get order in ranges endpoint called");
+        ResponseEntity<?> response = null;
+        try {
+            List<Order> sol = orderService.getOrdersInRange(startIndex,endIndex,100);
+            log.info(LocalDateTime.now() + " Successfully retrieved order with indexes!");
+            if(sol.size() != endIndex - startIndex) {
+                response = new ResponseEntity<>(sol, HttpStatus.OK);
+            } else {
+                response = new ResponseEntity<>(new CustomErrorResponse("404", "Invalid list of orders = " + sol.size() + "instead of " +(endIndex-startIndex)) , HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            log.warn(LocalDateTime.now() + " Exception encountered while trying to fetch indexes" + e.getMessage());
+            response = new ResponseEntity<>(new CustomErrorResponse("400", e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+
+        return response;
+    }
+
+
+
+
+    @GetMapping("/unprocessed")
+    public ResponseEntity<?> getUnprocessedOrders() {
+        log.info(LocalDateTime.now() + "Get unprocessed orders by index endpoint called");
+        ResponseEntity<?> response = null;
+        try {
+            Range sol = orderService.getUnprocessedOrders();
+            log.info(LocalDateTime.now() + " Successfully retrieved order with indexes!");
+            if(sol.getFirst() != 0 && sol.getSecond() != 0) {
+                response = new ResponseEntity<>(sol.toString(), HttpStatus.OK);
+            } else {
+                response = new ResponseEntity<>("All the orders have been processed", HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            log.warn(LocalDateTime.now() + " Exception encountered while trying to fetch indexes" + e.getMessage());
             response = new ResponseEntity<>(new CustomErrorResponse("400", e.getMessage()), HttpStatus.BAD_REQUEST);
         }
 
