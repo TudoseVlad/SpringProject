@@ -5,13 +5,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.spring_project.service.OrderService;
+import com.example.spring_project.service.RedisService;
 import com.example.spring_project.entity.Order;
 import com.example.spring_project.entity.Range;
+import com.example.spring_project.helpers.AuthChecker;
 import com.example.spring_project.helpers.CustomErrorResponse;
 
 import org.slf4j.Logger;
@@ -23,19 +26,32 @@ import java.util.List;
 @RequestMapping("/orders")
 public class OrderController {
     private static final Logger log = LoggerFactory.getLogger(OrderController.class);
-    
+    private AuthChecker authChecker;
     private OrderService orderService;
+    private RedisService redisService;
 
-    public OrderController(OrderService orderService){ this.orderService = orderService;}
+    public OrderController(OrderService orderService, RedisService redisService){ 
+        this.orderService = orderService;
+        this.redisService = redisService;
+        authChecker = new AuthChecker(this.redisService);
+    }
 
     @GetMapping("/info")
-    public ResponseEntity<?> info(){
+    public ResponseEntity<?> info(@RequestHeader("Authorization") String authHeader){
+        if(!authChecker.checkCredentials(authHeader)){
+            return new ResponseEntity<>(new CustomErrorResponse("403", "invalid token"), HttpStatus.UNAUTHORIZED);
+        }
         log.info(LocalDateTime.now() + "Info endpoint called");
         return new ResponseEntity<>("Order Products API is up and running!", HttpStatus.OK);
     }
 
     @GetMapping("/find")
-    public ResponseEntity<?> getOrderByIndex(@RequestParam(name = "index") Long index) {
+    public ResponseEntity<?> getOrderByIndex(@RequestParam(name = "index") Long index,@RequestHeader("Authorization") String authHeader) {
+
+        if(!authChecker.checkCredentials(authHeader)){
+            return new ResponseEntity<>(new CustomErrorResponse("403", "invalid token"), HttpStatus.UNAUTHORIZED);
+        }
+
         log.info(LocalDateTime.now() + "Get order by index endpoint called");
         ResponseEntity<?> response = null;
         try {
@@ -55,7 +71,12 @@ public class OrderController {
     }
 
     @GetMapping
-    public ResponseEntity<?>  getOrdersInRange(@RequestParam(name ="startIndex") Long startIndex, @RequestParam(name = "endIndex") Long endIndex) {
+    public ResponseEntity<?>  getOrdersInRange(@RequestParam(name ="startIndex") Long startIndex, @RequestParam(name = "endIndex") Long endIndex,@RequestHeader("Authorization") String authHeader) {
+
+        if(!authChecker.checkCredentials(authHeader)){
+            return new ResponseEntity<>(new CustomErrorResponse("403", "invalid token"), HttpStatus.UNAUTHORIZED);
+        }
+
         log.info(LocalDateTime.now() + "Get order in ranges endpoint called");
         ResponseEntity<?> response = null;
         try {
@@ -78,7 +99,12 @@ public class OrderController {
 
 
     @GetMapping("/unprocessed")
-    public ResponseEntity<?> getUnprocessedOrders() {
+    public ResponseEntity<?> getUnprocessedOrders(@RequestHeader("Authorization") String authHeader) {
+
+        if(!authChecker.checkCredentials(authHeader)){
+            return new ResponseEntity<>(new CustomErrorResponse("403", "invalid token"), HttpStatus.UNAUTHORIZED);
+        }
+
         log.info(LocalDateTime.now() + "Get unprocessed orders by index endpoint called");
         ResponseEntity<?> response = null;
         try {
@@ -98,7 +124,12 @@ public class OrderController {
     }
 
     @PostMapping()
-    public ResponseEntity<?> addOrder(@RequestBody Order order) {
+    public ResponseEntity<?> addOrder(@RequestBody Order order,@RequestHeader("Authorization") String authHeader) {
+
+        if(!authChecker.checkCredentials(authHeader)){
+            return new ResponseEntity<>(new CustomErrorResponse("403", "invalid token"), HttpStatus.UNAUTHORIZED);
+        }
+
         log.info(LocalDateTime.now() + " Post endpoint for creating order called");
         ResponseEntity<?> response = null;
 

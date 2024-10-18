@@ -4,13 +4,11 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.example.spring_project.entity.Order;
 import com.example.spring_project.repository.OrderRepository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.LocalDate;
 /// usage if we dont use db and create db in memory
 @Configuration
 public class DataBaseConfiguration {
