@@ -11,6 +11,8 @@ commands:
 
 POST /auth -  to add new user that generate jwt tokens and returns a JWT token  that is used for /orders commands
 
+---- every /orders commands needs to provide an active JWT token through the Bearer Token field.
+
 GET /orders/info - check if the api is running
 
 POST /orders - add an order
